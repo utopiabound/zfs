@@ -471,13 +471,103 @@ zpl_fallocate(struct file *filp, int mode, loff_t offset, loff_t len)
 }
 #endif /* HAVE_FILE_FALLOCATE */
 
+/*
+ * Map zfs file z_pflags (xvattr_t) to linux file attributes. Only file
+ * attributes common to both Linux and Solaris are mapped.
+ */
+static int
+zpl_ioctl_getflags(struct file *filp, void __user *arg)
+{
+	struct inode *ip = filp->f_dentry->d_inode;
+	unsigned int ioctl_flags = 0;
+	uint64_t zfs_flags = ITOZ(ip)->z_pflags;
+	int error;
+
+	if (zfs_flags & ZFS_IMMUTABLE)
+		ioctl_flags |= FS_IMMUTABLE_FL;
+
+	if (zfs_flags & ZFS_APPENDONLY)
+		ioctl_flags |= FS_APPEND_FL;
+
+	if (zfs_flags & ZFS_NODUMP)
+		ioctl_flags |= FS_NODUMP_FL;
+
+	ioctl_flags &= FS_FL_USER_VISIBLE;
+
+	error = copy_to_user(arg, &ioctl_flags, sizeof(ioctl_flags));
+
+	return (error);
+}
+
+static int
+zpl_ioctl_setflags(struct file *filp, void __user *arg)
+{
+	struct inode *ip = filp->f_dentry->d_inode;
+	znode_t *zp = ITOZ(ip);
+	unsigned int ioctl_flags;
+	uint64_t zfs_flags, old_zfs_flags;
+	cred_t *cr = CRED();
+	xvattr_t xva;
+	int error;
+
+	if (copy_from_user(&ioctl_flags, arg, sizeof(ioctl_flags)))
+		return (-EFAULT);
+
+	if ((ioctl_flags & ~(FS_IMMUTABLE_FL | FS_APPEND_FL | FS_NODUMP_FL)))
+		return (-EOPNOTSUPP);
+
+	if ((ioctl_flags & ~(FS_FL_USER_MODIFIABLE)))
+		return (-EACCES);
+
+	if ((ioctl_flags & (FS_IMMUTABLE_FL | FS_APPEND_FL)
+		&& !capable(CAP_LINUX_IMMUTABLE)))
+		return (-EACCES);
+
+#ifdef HAVE_INODE_OWNER_OR_CAPABLE
+	if (!inode_owner_or_capable(ip))
+#else
+	if (!is_owner_or_cap(ip))
+#endif
+		return (-EACCES);
+
+	xva_init(&xva);
+	zfs_flags = old_zfs_flags = ITOZ(ip)->z_pflags;
+
+	if (ioctl_flags & FS_IMMUTABLE_FL)
+		zfs_flags |= ZFS_IMMUTABLE;
+	else
+		zfs_flags &= ~ZFS_IMMUTABLE;
+
+	if (ioctl_flags & FS_APPEND_FL)
+		zfs_flags |= ZFS_APPENDONLY;
+	else
+		zfs_flags &= ~ZFS_APPENDONLY;
+
+	if (ioctl_flags & FS_NODUMP_FL)
+		zfs_flags |= ZFS_NODUMP;
+	else
+		zfs_flags &= ~ZFS_NODUMP;
+
+	zp->z_pflags = zfs_flags;
+
+	crhold(cr);
+	error = -zfs_setattr(ip, (vattr_t *)&xva, 0, cr);
+	crfree(cr);
+
+	if (error)
+		zp->z_pflags = old_zfs_flags;
+
+	return (error);
+}
+
 static long
 zpl_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	switch (cmd) {
-	case ZFS_IOC_GETFLAGS:
-	case ZFS_IOC_SETFLAGS:
-		return (-EOPNOTSUPP);
+	case FS_IOC_GETFLAGS:
+		return zpl_ioctl_getflags(filp, (void *)arg);
+	case FS_IOC_SETFLAGS:
+		return zpl_ioctl_setflags(filp, (void *)arg);
 	default:
 		return (-ENOTTY);
 	}
