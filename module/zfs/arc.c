@@ -138,6 +138,7 @@
 #endif
 #include <sys/callb.h>
 #include <sys/kstat.h>
+#include <sys/dmu_tx.h>
 #include <zfs_fletcher.h>
 
 static kmutex_t		arc_reclaim_thr_lock;
@@ -3555,6 +3556,7 @@ arc_memory_throttle(uint64_t reserve, uint64_t inflight_data, uint64_t txg)
 	} else if (page_load > 0 && arc_reclaim_needed()) {
 		/* memory is low, delay before restarting */
 		ARCSTAT_INCR(arcstat_memory_throttle_count, 1);
+		DMU_TX_STAT_BUMP(dmu_tx_memory_reclaim);
 		return (EAGAIN);
 	}
 	page_load = 0;
@@ -3570,6 +3572,7 @@ arc_memory_throttle(uint64_t reserve, uint64_t inflight_data, uint64_t txg)
 
 	if (inflight_data > available_memory / 4) {
 		ARCSTAT_INCR(arcstat_memory_throttle_count, 1);
+		DMU_TX_STAT_BUMP(dmu_tx_memory_inflight);
 		return (ERESTART);
 	}
 #endif
@@ -3600,8 +3603,10 @@ arc_tempreserve_space(uint64_t reserve, uint64_t txg)
 #endif
 	if (reserve > arc_c/4 && !arc_no_grow)
 		arc_c = MIN(arc_c_max, reserve * 4);
-	if (reserve > arc_c)
+	if (reserve > arc_c) {
+		DMU_TX_STAT_BUMP(dmu_tx_memory_reserve);
 		return (ENOMEM);
+	}
 
 	/*
 	 * Don't count loaned bufs as in flight dirty data to prevent long
@@ -3634,6 +3639,7 @@ arc_tempreserve_space(uint64_t reserve, uint64_t txg)
 		    arc_anon->arcs_lsize[ARC_BUFC_METADATA]>>10,
 		    arc_anon->arcs_lsize[ARC_BUFC_DATA]>>10,
 		    reserve>>10, arc_c>>10);
+		DMU_TX_STAT_BUMP(dmu_tx_dirty_throttle);
 		return (ERESTART);
 	}
 	atomic_add_64(&arc_tempreserve, reserve);
