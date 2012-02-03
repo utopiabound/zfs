@@ -226,6 +226,21 @@ vdev_disk_open(vdev_t *v, uint64_t *psize, uint64_t *ashift)
 	/* Try to set the io scheduler elevator algorithm */
 	(void) vdev_elevator_switch(v, zfs_vdev_scheduler);
 
+	/* Disable queue plugging for non-rotational devices if they support
+	 * block layer tagging.  This was standard behavior until 2.6.32
+	 * when commit fb1e753 changed they code to dynamically enable this
+	 * support based on queue depth.  However, due to performance issues
+	 * that change was reverted in 2.6.34 by commit 79da064.
+	 *
+	 * The following check ensures that the pre-2.6.32 and post-2.6.34
+	 * behavior is used regardless of whether your kernel contains
+	 * this change.
+	 */
+#ifdef QUEUE_FLAG_CQ
+	if (blk_queue_tagged(bdev_get_queue(bdev)))
+		set_bit(QUEUE_FLAG_CQ, &bdev_get_queue(bdev)->queue_flags);
+#endif /* QUEUE_FLAG_CQ */
+
 	return 0;
 }
 
