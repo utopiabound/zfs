@@ -2134,6 +2134,12 @@ arc_reclaim_needed(void)
 #ifdef _KERNEL
 	uint64_t extra;
 
+	/* The kernel is better suited to decide when the ARC needs to
+	 * be reclaimed. Thus, rely on the registered shrinker functions
+	 * to reclaim ARC memory by always returning false here.
+	 */
+	return (0);
+
 	if (needfree)
 		return (1);
 
