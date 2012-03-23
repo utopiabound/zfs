@@ -2217,7 +2217,11 @@ arc_evictable_memory(void) {
 	    arc_mru->arcs_lsize[ARC_BUFC_DATA] +
 	    arc_mru->arcs_lsize[ARC_BUFC_METADATA] +
 	    arc_mfu->arcs_lsize[ARC_BUFC_DATA] +
-	    arc_mfu->arcs_lsize[ARC_BUFC_METADATA];
+	    arc_mfu->arcs_lsize[ARC_BUFC_METADATA] +
+	    arc_mru_ghost->arcs_lsize[ARC_BUFC_DATA] +
+	    arc_mru_ghost->arcs_lsize[ARC_BUFC_METADATA] +
+	    arc_mfu_ghost->arcs_lsize[ARC_BUFC_DATA] +
+	    arc_mfu_ghost->arcs_lsize[ARC_BUFC_METADATA];
 
 	return MIN(evictable_memory, arc_size - arc_c_min);
 }
