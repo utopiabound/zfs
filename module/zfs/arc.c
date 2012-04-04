@@ -2301,9 +2301,7 @@ __arc_shrinker_func(struct shrinker *shrink, struct shrink_control *sc)
 	if (!(sc->gfp_mask & __GFP_FS))
 		return (-1);
 
-	/* Reclaim in progress */
-	if (mutex_tryenter(&arc_reclaim_thr_lock) == 0)
-		return (-1);
+	mutex_enter(&arc_reclaim_thr_lock);
 
 	/*
 	 * Evict the requested number of pages by shrinking arc_c the
