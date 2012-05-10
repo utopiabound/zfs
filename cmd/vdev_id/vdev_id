@@ -267,6 +267,9 @@ fi
 
 SLOT=`map_slot $SLOT`
 CHAN=`map_channel $PCI_ID $PORT`
+if [ -z "$CHAN" ] ; then
+	exit 0
+fi
 ID_VDEV=${CHAN}${SLOT}
 
 echo "ID_VDEV=${ID_VDEV}"
