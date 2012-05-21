@@ -2211,7 +2211,7 @@ _ACEOF
 		if test -n "$ZFS_META_NAME" -a -n "$ZFS_META_VERSION"; then
 				ZFS_META_ALIAS="$ZFS_META_NAME-$ZFS_META_VERSION"
 				test -n "$ZFS_META_RELEASE" &&
-				        ZFS_META_ALIAS="$ZFS_META_ALIAS-$ZFS_META_RELEASE"
+					ZFS_META_ALIAS="$ZFS_META_ALIAS-$ZFS_META_RELEASE"
 
 cat >>confdefs.h <<_ACEOF
 #define ZFS_META_ALIAS "$ZFS_META_ALIAS"
@@ -2318,6 +2318,37 @@ _ACEOF
 
 	{ $as_echo "$as_me:$LINENO: result: $_zfs_ac_meta_got_file" >&5
 $as_echo "$_zfs_ac_meta_got_file" >&6; }
+
+       { $as_echo "$as_me:$LINENO: checking git describe" >&5
+$as_echo_n "checking git describe... " >&6; }
+
+       match="${ZFS_META_NAME}-${ZFS_META_VERSION}-${ZFS_META_RELEASE}"
+       if git branch >/dev/null 2>&1; then
+	       desc=$(git describe --tags --match $match)
+       else
+	       desc=""
+       fi
+
+       if test "$desc" = ""; then
+	       { $as_echo "$as_me:$LINENO: result: not a git tree" >&5
+$as_echo "not a git tree" >&6; }
+       elif test "$desc" = "$match"; then
+	       { $as_echo "$as_me:$LINENO: result: matches meta file" >&5
+$as_echo "matches meta file" >&6; }
+       else
+	       { $as_echo "$as_me:$LINENO: result: does not match meta file ($desc)" >&5
+$as_echo "does not match meta file ($desc)" >&6; }
+       fi
+
+       desc=$(echo $desc | sed "s/$match//g" | sed "s/-/_/g")
+
+       if test "$desc" != ""; then
+	       ZFS_META_RELEASE="$ZFS_META_RELEASE$desc"
+       fi
+
+
+
+
 
 
 ac_aux_dir=
@@ -4839,13 +4870,13 @@ if test "${lt_cv_nm_interface+set}" = set; then
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:4842: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:4873: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4845: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:4876: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4848: output\"" >&5)
+  (eval echo "\"\$as_me:4879: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -6051,7 +6082,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 6054 "configure"' > conftest.$ac_ext
+  echo '#line 6085 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7904,11 +7935,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7907: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7938: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7911: \$? = $ac_status" >&5
+   echo "$as_me:7942: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8243,11 +8274,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8246: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8277: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:8250: \$? = $ac_status" >&5
+   echo "$as_me:8281: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8348,11 +8379,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8351: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8382: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8355: \$? = $ac_status" >&5
+   echo "$as_me:8386: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8403,11 +8434,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8406: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8437: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8410: \$? = $ac_status" >&5
+   echo "$as_me:8441: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -11206,7 +11237,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11209 "configure"
+#line 11240 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11302,7 +11333,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11305 "configure"
+#line 11336 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
