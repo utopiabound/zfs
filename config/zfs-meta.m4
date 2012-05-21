@@ -59,7 +59,7 @@ AC_DEFUN([ZFS_AC_META], [
 		if test -n "$ZFS_META_NAME" -a -n "$ZFS_META_VERSION"; then
 				ZFS_META_ALIAS="$ZFS_META_NAME-$ZFS_META_VERSION"
 				test -n "$ZFS_META_RELEASE" && 
-				        ZFS_META_ALIAS="$ZFS_META_ALIAS-$ZFS_META_RELEASE"
+					ZFS_META_ALIAS="$ZFS_META_ALIAS-$ZFS_META_RELEASE"
 				AC_DEFINE_UNQUOTED([ZFS_META_ALIAS],
 					["$ZFS_META_ALIAS"],
 					[Define the project alias string.] 
@@ -114,7 +114,36 @@ AC_DEFUN([ZFS_AC_META], [
 	fi
 
 	AC_MSG_RESULT([$_zfs_ac_meta_got_file])
+	ZFS_AC_META_RELEASE
 	]
+)
+
+AC_DEFUN([ZFS_AC_META_RELEASE], [
+       AC_MSG_CHECKING([git describe])
+
+       match="${ZFS_META_NAME}-${ZFS_META_VERSION}-${ZFS_META_RELEASE}"
+       if git branch >/dev/null 2>&1; then
+	       desc=$(git describe --tags --match $match)
+       else
+	       desc=""
+       fi
+
+       if test "$desc" = ""; then
+	       AC_MSG_RESULT([not a git tree])
+       elif test "$desc" = "$match"; then
+	       AC_MSG_RESULT([matches meta file])
+       else
+	       AC_MSG_RESULT([does not match meta file ($desc)])
+       fi
+
+       desc=$(echo $desc | sed "s/$match//g" | sed "s/-/_/g")
+
+       if test "$desc" != ""; then
+	       ZFS_META_RELEASE="$ZFS_META_RELEASE$desc"
+       fi
+
+       AC_SUBST([ZFS_META_RELEASE])
+       ]
 )
 
 AC_DEFUN([_ZFS_AC_META_GETVAL], 
