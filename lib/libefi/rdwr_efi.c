@@ -203,8 +203,8 @@ efi_get_info(int fd, struct dk_cinfo *dki_info)
 			      dki_info->dki_dname,
 			      &dki_info->dki_partition);
 	} else if ((strncmp(dev_path, "/dev/dm-", 8) == 0)) {
-		strcpy(dki_info->dki_cname, "dm");
-		dki_info->dki_ctype = DKC_MD;
+		strcpy(dki_info->dki_cname, "pseudo");
+		dki_info->dki_ctype = DKC_VBD;
 		rval = sscanf(dev_path, "/dev/%[a-zA-Z0-9-]p%hu",
 			      dki_info->dki_dname,
 			      &dki_info->dki_partition);
