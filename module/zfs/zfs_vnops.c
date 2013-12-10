@@ -548,7 +548,6 @@ out:
 	zfs_range_unlock(rl);
 
 	ZFS_ACCESSTIME_STAMP(zsb, zp);
-	zfs_inode_update(zp);
 	ZFS_EXIT(zsb);
 	return (error);
 }
@@ -2130,7 +2129,6 @@ update:
 		error = 0;
 
 	ZFS_ACCESSTIME_STAMP(zsb, zp);
-	zfs_inode_update(zp);
 
 out:
 	ZFS_EXIT(zsb);
@@ -3664,7 +3662,6 @@ zfs_readlink(struct inode *ip, uio_t *uio, cred_t *cr)
 	mutex_exit(&zp->z_lock);
 
 	ZFS_ACCESSTIME_STAMP(zsb, zp);
-	zfs_inode_update(zp);
 	ZFS_EXIT(zsb);
 	return (error);
 }
