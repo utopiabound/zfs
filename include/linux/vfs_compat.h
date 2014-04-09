@@ -149,6 +149,9 @@ typedef	int		zpl_umode_t;
 #define zpl_sget(type, cmp, set, fl, mtd)	sget(type, cmp, set, mtd)
 #endif /* HAVE_5ARG_SGET */
 
+#define ZFS_IOC_GETFLAGS	FS_IOC_GETFLAGS
+#define ZFS_IOC_SETFLAGS	FS_IOC_SETFLAGS
+
 #if defined(SEEK_HOLE) && defined(SEEK_DATA) && !defined(HAVE_LSEEK_EXECUTE)
 static inline loff_t
 lseek_execute(struct file *filp, struct inode *inode,
